@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "movingparts"
+authors = [{name = "Andrew Schechtman-Rook", email = "rook166@gmail.com"}]
+description = "Small library of utilities to create moving parts for 3D printing"
+readme = "README.md"
+requires-python = ">=3.11.11"
+license = {text = "MIT"}
+dependencies = [
+    "cadquery>=2.5.0.dev0",
+    "build123d>=0.8.0",
+    "numpy>=2.2.1"
+]
+dynamic = ["version"]
+
+[tool.setuptools]
+packages = ["movingparts"]
+
+[tool.setuptools.dynamic]
+version = {attr = "movingparts.__version__"}
