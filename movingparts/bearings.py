@@ -8,7 +8,7 @@ def make_bearing(
         outer_diameter: float,
         enclosure_height: float,
         vertical_curvature_ratio: float = 1.5,
-        vertical_opening_ratio: float = 0.3,
+        vertical_opening_size: float = 0.2,
         minimum_object_gap: float = 0.1,
 ):
     # The borehole is a rotated ellipse. To reduce the amount of contact
@@ -18,16 +18,15 @@ def make_bearing(
     torus_x_diameter = (inner_diameter + outer_diameter) / 2.
     torus_z_diameter = torus_x_diameter * vertical_curvature_ratio
     ball_radius = (outer_diameter - inner_diameter) / 2 - minimum_object_gap
-    vertical_opening_radius = ball_radius * vertical_opening_ratio
 
     # Given the vertical opening size desired, we have to figure out how tall the
     # bearing enclosure must be in order to preserve the minimum object gap on each side.
     # To do that we calculate where the circular bearings will intersect the opening:
-    assert vertical_opening_radius <= ball_radius
+    assert vertical_opening_size <= 2 * ball_radius
 
     minimum_enclosure_height = sqrt(
         (ball_radius) ** 2 -
-        (vertical_opening_radius) ** 2
+        (vertical_opening_size / 2) ** 2
     ) * 2
     assert enclosure_height >= minimum_enclosure_height
 
@@ -61,14 +60,11 @@ def make_bearing(
         #bore out a cylinder of vertical_opening_radius * 2
         with bd.BuildSketch(bd.Plane.XZ):
             with bd.Locations(((torus_x_diameter / 2), 0)):
-                bd.Rectangle(vertical_opening_radius * 2, enclosure_height)
+                bd.Rectangle(vertical_opening_size, enclosure_height)
         bd.revolve(axis=bd.Axis.Z, mode=bd.Mode.SUBTRACT)
 
     with bd.BuildPart() as bearings:
-        # with bd.Locations((ball_center_x_coordinates[0], ball_center_y_coordinates[0])) as location:
-        #     bd.Sphere(ball_radius)
         with bd.Locations(*zip(ball_center_x_coordinates, ball_center_y_coordinates)):
-            #breakpoint()
             bd.Sphere(ball_radius)
 
 
@@ -77,12 +73,15 @@ def make_bearing(
             + enclosure.part
             + bearings.part
     )
-
-    bd.export_stl(final_part, "test.stl")
+    return final_part
 
 
 if __name__ == "__main__":
-    make_bearing(15, 20, 5, minimum_object_gap=0.2)
+    bearing = make_bearing(
+        15, 20, 5,
+        vertical_opening_size=2, minimum_object_gap=0.2
+    )
+    bd.export_stl(bearing, "test.stl")
 
 
 """

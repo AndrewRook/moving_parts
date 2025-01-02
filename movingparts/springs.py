@@ -11,7 +11,7 @@ def spring(spring_radius: float, coil_radius: float, height: float, pitch: float
     to be flat.
     * PLA does not have an incredibly large bending range, and will snap if stressed too much.
     You can mitigate this somewhat by using a smaller pitch angle, which controls how spaced
-    out each coil wind is (at the expense of having less movement range). 
+    out each coil wind is (at the expense of having less movement range).
     """
     p = bd.Part()
     helix = bd.Helix(radius=spring_radius, pitch=pitch, height=height, cone_angle=0)
