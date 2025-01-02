@@ -28,7 +28,7 @@ def make_bearing(
     minimum_enclosure_height = sqrt(
         (ball_radius) ** 2 -
         (vertical_opening_radius) ** 2
-    )
+    ) * 2
     assert enclosure_height >= minimum_enclosure_height
 
     full_component_width = outer_diameter * 1.5 / 2
@@ -65,11 +65,11 @@ def make_bearing(
         bd.revolve(axis=bd.Axis.Z, mode=bd.Mode.SUBTRACT)
 
     with bd.BuildPart() as bearings:
-        with bd.Locations((ball_center_x_coordinates[0], ball_center_y_coordinates[0])) as location:
-            bd.Sphere(ball_radius)
-        # with bd.Locations(*zip(ball_center_x_coordinates, ball_center_y_coordinates)):
-        #     #breakpoint()
+        # with bd.Locations((ball_center_x_coordinates[0], ball_center_y_coordinates[0])) as location:
         #     bd.Sphere(ball_radius)
+        with bd.Locations(*zip(ball_center_x_coordinates, ball_center_y_coordinates)):
+            #breakpoint()
+            bd.Sphere(ball_radius)
 
 
     final_part = (
@@ -82,7 +82,7 @@ def make_bearing(
 
 
 if __name__ == "__main__":
-    make_bearing(15, 20, 5)
+    make_bearing(15, 20, 5, minimum_object_gap=0.2)
 
 
 """
