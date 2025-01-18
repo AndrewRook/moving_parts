@@ -28,7 +28,7 @@ def make_twisted_slider(
 ):
     straight_fraction = 0.85
     radius_fraction = 0.2
-    rotations = np.linspace(0, 360, num_patterns + 1)[1:-1]
+    rotations = np.linspace(0, 360, number_of_patterns + 1)[1:-1]
 
     pattern = _make_pattern(
         straight_fraction, pattern_radius, radius_fraction, rotations
@@ -47,15 +47,16 @@ def make_twisted_slider(
     )
     return inner_slider, enclosure_cutout
 
-
-
-
 def _make_pattern(straight_fraction, pattern_radius, radius_fraction, rotations, gap=0):
     with bd.BuildSketch() as pattern:
         with bd.BuildLine() as curve:
-            l1 = bd.Line((0, 0), (gap, 0))
+            if gap > 1e-3:
+                l1 = bd.Line((0, 0), (gap, 0))
+                next_line_start = l1 @ 1
+            else:
+                next_line_start = (0, 0)
             l2 = bd.Line(
-                l1 @ 1,
+                next_line_start,
                 (straight_fraction * pattern_radius, -radius_fraction * pattern_radius - gap)
             )
             l3 = bd.CenterArc(
@@ -64,7 +65,8 @@ def _make_pattern(straight_fraction, pattern_radius, radius_fraction, rotations,
                 start_angle=270, arc_size=180
             )
             l4 = bd.Line(l3 @ 1, (-gap, 0))
-            l5 = bd.Line(l4 @ 1, l1 @ 0)
+            if gap > 1e-3:
+                l5 = bd.Line(l4 @ 1, l1 @ 0)
         pattern_face = bd.make_face()
 
         for rotation_angle in rotations:
@@ -75,74 +77,18 @@ def _make_pattern(straight_fraction, pattern_radius, radius_fraction, rotations,
     return pattern
 
 
-
 if __name__ == "__main__":
     pattern_radius = 15
-    straight_fraction = 0.85
-    radius_fraction = 0.2
-    num_patterns = 6
-    rotations = np.linspace(0, 360, num_patterns + 1)[1:-1]
     gap = 0.3
 
-    with bd.BuildSketch() as pattern:
-        with bd.BuildLine() as curve:
-            l1 = bd.Line(
-                (0, 0),
-                (straight_fraction * pattern_radius, -radius_fraction * pattern_radius)
-            )
-            arc = bd.CenterArc(
-                (straight_fraction * pattern_radius, 0),
-                radius=radius_fraction * pattern_radius,
-                start_angle=270, arc_size=180
-            )
-            l2 = bd.Line(
-                arc @ 1,
-                (0, 0)
-            )
-        pattern_face = bd.make_face()
-
-        for rotation_angle in rotations:
-            rotated_pattern_face = pattern_face.rotate(bd.Axis.Z, rotation_angle)
-            context = bd.BuildSketch._get_context()
-            context._add_to_context(rotated_pattern_face)
-        central_circle = bd.Circle(pattern_radius / 3)
-
-    with bd.BuildSketch() as pattern_cutout:
-        with bd.BuildLine() as curve:
-            l1 = bd.Line(
-                (0, 0),
-                (gap, 0)
-            )
-            l2 = bd.Line(
-                l1 @ 1,
-                (straight_fraction * pattern_radius, -radius_fraction * pattern_radius - gap)
-            )
-            arc = bd.CenterArc(
-                (straight_fraction * pattern_radius, 0),
-                radius=radius_fraction * pattern_radius + gap,
-                start_angle=270, arc_size=180
-            )
-            l3 = bd.Line(arc @ 1, (-gap, 0))
-            l4 = bd.Line(l3 @ 1, l1 @ 0)
-        pattern_face_cutout = bd.make_face()
-
-        for rotation_angle in rotations:
-            rotated_pattern_face_cutout = pattern_face_cutout.rotate(bd.Axis.Z, rotation_angle)
-            context = bd.BuildSketch._get_context()
-            context._add_to_context(rotated_pattern_face_cutout)
-        central_circle = bd.Circle(gap + pattern_radius / 3)
-
-    piece_height = 15
-    enclosure_prism_height = 30
-    enclosure_cylinder_height = 2
-    rotation_angle_per_height = 5
-    inner_slider = twist_extrude_cutout_sketch(
-        pattern, piece_height, rotation_angle_per_height * piece_height
-    )
-    slider_cutout = twist_extrude_cutout_sketch(
-        pattern_cutout,
-        2* enclosure_prism_height + enclosure_cylinder_height,
-        rotation_angle_per_height * (2 * enclosure_prism_height + enclosure_cylinder_height)
+    enclosure_prism_height = 40
+    enclosure_cylinder_height = 10
+    inner_slider, slider_cutout = make_twisted_slider(
+        pattern_radius,
+        15,
+        2 * enclosure_prism_height + enclosure_cylinder_height,
+        5,
+        enclosure_gap=0.3
     )
 
 
